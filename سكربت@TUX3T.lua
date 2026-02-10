@@ -7,7 +7,7 @@ gg.setVisible(false)
 
 -- ================== الإعدادات ==================
 local PASSWORD = "@TUX3T"
-local EXPIRE_TIME = os.time({year=2026, month=2, day=10, hour=15, min=47, sec=0})
+local EXPIRE_TIME = os.time({year=2026, month=2, day=14, hour=15, min=47, sec=0})
 
 -- 🕐 دالة حساب الوقت المتبقي
 function getRemainingTime()
