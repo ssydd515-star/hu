@@ -1,5 +1,5 @@
 -- ================================================
--- 🛡️ TUX3T Script v4.1 - مع عداد الوقت المتبقي
+-- 🛡️ TUX3T Script v4.2 - مع عداد الوقت المتبقي وجاذبية الكرة
 -- 👤 @TT7DH | 📢 @TUX3T
 -- ================================================
 
@@ -7,7 +7,7 @@ gg.setVisible(false)
 
 -- ================== الإعدادات ==================
 local PASSWORD = "@TUX3T"
-local EXPIRE_TIME = os.time({year=2026, month=2, day=14, hour=15, min=47, sec=0})
+local EXPIRE_TIME = os.time({year=2026, month=2, day=18, hour=15, min=47, sec=0})
 
 -- 🕐 دالة حساب الوقت المتبقي
 function getRemainingTime()
@@ -45,7 +45,7 @@ function checkAuth()
 ║     ⛔ انتهت الصلاحية!      ║
 ╚══════════════════════════════╝
 
-📅 تاريخ الانتهاء: 20/02/2026
+📅 تاريخ الانتهاء: 14/02/2026
 🕐 الوقت الحالي: ]] .. os.date("%H:%M:%S") .. [[
 
 📢 يرجى تحميل الإصدار الجديد
@@ -73,7 +73,7 @@ function checkAuth()
 📅 صلاحية السكربت:
 ]] .. getRemainingTime() .. [[
 
-📅 تاريخ الانتهاء: 20/02/2026
+📅 تاريخ الانتهاء: 14/02/2026
 🕐 الوقت الحالي: ]] .. os.date("%H:%M:%S") .. [[
 
 🔐 أدخل الباسورد للمتابعة...
@@ -107,7 +107,7 @@ function checkAuth()
 end
 
 -- 🏷️ باقي السكربت يبدأ من هنا...
-local SCRIPT_VERSION = "4.1"
+local SCRIPT_VERSION = "4.2"
 local versionFile = "/storage/emulated/0/.tux3t_version.txt"
 
 -- 🔗 معلومات التواصل
@@ -142,10 +142,12 @@ end
 local savedShoot = {}
 local savedPossession = {}
 local savedLuck = {}
+local savedBallGravity = {} -- متغير لحفظ قيم جاذبية الكرة
 local activeFeatures = {
     shoot = false,
     possession = false,
-    luck = false
+    luck = false,
+    ballGravity = false -- إضافة خاصية جاذبية الكرة
 }
 
 -- ... باقي كود السكربت (القائمة الرئيسية) يبدأ من هنا ...
@@ -155,7 +157,7 @@ function mainMenu()
         if gg.isVisible(true) then
             gg.setVisible(false)
 
-            local header = "🌟 سكربت PES Mobile ⚽\n🎮 أدوات تعديل PES Mobile\n" .. 
+            local header = "🌟 سكربت PES Mobile ⚽\n🎮 أدوات تعديل PES Mobile v"..SCRIPT_VERSION.."\n" .. 
                           getRemainingTime() .. "\n📢 "..TELEGRAM_CHANNEL.." | 👤 "..TELEGRAM_USER
 
             local menuItems = {
@@ -165,12 +167,14 @@ function mainMenu()
                 '❌ إيقاف استحواذ',
                 '✅ تفعيل نسبة حظ',
                 '❌ إيقاف نسبة حظ',
+                '✅ تفعيل جاذبية الكرة', -- خيار جديد
+                '❌ إيقاف جاذبية الكرة', -- خيار جديد
                 '⚡ تسريع اللعبة ×2',
                 '⏸ إعادة السرعة العادية',
                 '⏱️ مؤقت مباراة',
                 '⚡ خيارات سرعة متقدمة',
                 '📊 الميزات النشطة',
-                '⏰ عرض الوقت المتبقي', -- خيار جديد
+                '⏰ عرض الوقت المتبقي',
                 '🔗 رابط القناة',
                 '🚪 خروج'
             }
@@ -243,14 +247,40 @@ function mainMenu()
                 end
 
             elseif menu == 7 then
+                -- تفعيل جاذبية الكرة
+                gg.searchNumber("10.0;30.0;120.0;1.0;1.5", gg.TYPE_FLOAT, false, gg.SIGN_EQUAL, 0, -1, 0)
+                gg.processResume()
+                gg.refineNumber("1.5", gg.TYPE_FLOAT, false, gg.SIGN_EQUAL, 0, -1, 0)
+                savedBallGravity = gg.getResults(5, nil, nil, nil, nil, nil, nil, nil, nil)
+                
+                if #savedBallGravity > 0 then
+                    gg.editAll("9", gg.TYPE_FLOAT)
+                    activeFeatures.ballGravity = true
+                    gg.toast("✅ تم تفعيل جاذبية الكرة\n👤 "..TELEGRAM_USER)
+                else
+                    gg.toast("⚠️ لم يتم العثور على قيم الجاذبية!")
+                end
+                gg.clearResults()
+
+            elseif menu == 8 then
+                -- إيقاف جاذبية الكرة
+                if #savedBallGravity > 0 then
+                    gg.setValues(savedBallGravity)
+                    activeFeatures.ballGravity = false
+                    gg.toast("❌ تم إيقاف جاذبية الكرة\n👤 "..TELEGRAM_USER)
+                else
+                    gg.toast("⚠️ لا توجد قيم محفوظة للجاذبية!")
+                end
+
+            elseif menu == 9 then
                 gg.setSpeed(2.0)
                 gg.alert("⚡ تم تسريع اللعبة ×2\n👤 "..TELEGRAM_USER)
 
-            elseif menu == 8 then
+            elseif menu == 10 then
                 gg.setSpeed(1.0)
                 gg.alert("⏸ تم إعادة السرعة العادية\n👤 "..TELEGRAM_USER)
 
-            elseif menu == 9 then
+            elseif menu == 11 then
                 local timerChoice = gg.choice({
                     "⏱️ 6:15 دقيقة",
                     "⏱️ 3:00 دقيقة",
@@ -275,7 +305,7 @@ function mainMenu()
                     gg.setSpeed(10.0)
                 end
 
-            elseif menu == 10 then
+            elseif menu == 12 then
                 while true do
                     local choice = gg.choice({
                         "🐢 بطيء 0.25x",
@@ -298,7 +328,7 @@ function mainMenu()
                     end
                 end
 
-            elseif menu == 11 then
+            elseif menu == 13 then
                 local activeList = "📊 الميزات النشطة:\n\n"
                 if activeFeatures.shoot then
                     activeList = activeList .. "✅ تسديد قوي\n"
@@ -318,17 +348,23 @@ function mainMenu()
                     activeList = activeList .. "❌ نسبة حظ\n"
                 end
                 
+                if activeFeatures.ballGravity then
+                    activeList = activeList .. "✅ جاذبية الكرة\n"
+                else
+                    activeList = activeList .. "❌ جاذبية الكرة\n"
+                end
+                
                 activeList = activeList .. "\n" .. getRemainingTime() .. "\n👤 "..TELEGRAM_USER.."\n📢 "..TELEGRAM_CHANNEL
                 gg.alert(activeList)
 
-            elseif menu == 12 then
-                -- خيار جديد: عرض الوقت المتبقي
+            elseif menu == 14 then
+                -- عرض الوقت المتبقي
                 local timeDetails = [[
 ⏰ معلومات صلاحية السكربت:
 
 ]] .. getRemainingTime() .. [[
 
-📅 تاريخ الانتهاء: 20/02/2026
+📅 تاريخ الانتهاء: 14/02/2026
 🕐 الوقت الحالي: ]] .. os.date("%H:%M:%S") .. [[
 📅 اليوم: ]] .. os.date("%A %d/%m/%Y") .. [[
 
@@ -337,11 +373,11 @@ function mainMenu()
                 ]]
                 gg.alert(timeDetails)
 
-            elseif menu == 13 then
+            elseif menu == 15 then
                 gg.copyText(TELEGRAM_CHANNEL_LINK)
                 gg.alert("🔗 رابط القناة:\n"..TELEGRAM_CHANNEL_LINK.."\n\n✅ تم نسخ الرابط\n📢 يمكنك فتحه الآن في المتصفح\n\n👤 "..TELEGRAM_USER)
 
-            elseif menu == 14 then
+            elseif menu == 16 then
                 gg.toast("👋 تم الخروج\n" .. getRemainingTime() .. "\n👤 "..TELEGRAM_USER)
                 os.exit()
             end
@@ -359,7 +395,7 @@ checkForUpdates()
 
 -- 3. عرض رسالة الترحيب
 local welcomeMsg = [[
-🎮 أهلاً بك في سكربت TUX3T Pro!
+🎮 أهلاً بك في سكربت TUX3T Pro v]]..SCRIPT_VERSION..[[!
 
 ]] .. getRemainingTime() .. [[
 
